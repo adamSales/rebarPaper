@@ -3,8 +3,6 @@ source('sourceCode/simulationFunctions.r')
 library(MASS)
 library(optmatch)
 library(SuperLearner)
-#library(tmle)
-#library(twang)
 library(Matching)
 library(survey)
 library(cem)
@@ -79,14 +77,8 @@ simTotRR <- function(B,n=400,p=600,nt=50,gm=c(0,0.1,0.5),DECAY=c(0,0.004,0.05),S
             cat('gamma=',gm[g],' tau=',tau,' decay=',DECAY[d],'\n')
             s <- smallsim(B=B,X=X[[d]],bg=BG[[g]],nt=nt,curved=FALSE,SL.library=SL.library,SL.libraryZ=SL.libraryZ)
             resultsGood[[paste(gm[g],'_',DECAY[d],sep='')]] <- s
-<<<<<<< HEAD
             save(list=c(as.vector(lsf.str(envir=.GlobalEnv)),'resultsGood','startTime','runSimCurrent','simulationFunctionsCurrent','X','BG','CALL',as.character(CALL)[-c(1,2)]),
                  file=paste('output/simGood',Sys.Date(),'.RData',sep=''))
-=======
-            save(list=c(as.vector(lsf.str(envir=.GlobalEnv)),'s','startTime','runSimCurrent','simulationFunctionsCurrent','X','BG','CALL'),
-                 file=paste('output/sim',gm[g],'_',DECAY[d],'good',Sys.Date(),'.RData',sep=''))
->>>>>>> parent of fb09f61... fixed naming; delted obsolete functions
-
         }
     list(resultsGood=resultsGood,BG=BG,X=X)
 }
