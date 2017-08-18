@@ -711,7 +711,7 @@ $n_T=$50 were treated.
 As in (\ref{eq:outcome}), the coefficients for the first five columns of $\covMat$ in (\ref{eq:treatment}) were all set equal to 1.
 The coefficients of the other 595 columns in  (\ref{eq:treatment}) were the same as in (\ref{eq:outcome}), multiplied by a factor $\kappa$ which varied between simulation runs.
 
-The factor $\kappa$ controled the amount of confounding after matching.
+The factor $\kappa$ controlled the amount of confounding after matching.
 When $\kappa=0$, only the first five columns of $\covMat$ predicted $Z$,
 so estimates from a match based on those covariates were approximately unconfounded.
 When $\kappa>0$, every column of $\covMat$ predicted both $Z$ and $y_C$, and therefore confounded matching estimators that used only the first five columns of $\covMat$.
@@ -892,7 +892,7 @@ remnant, we computed a rebar estimate.
   divided by the standard deviation of $y_C$. % to ease interpretation.
   The matching and outcome adjustment methods are described in Section
   \ref{sec:sim-estimators} and Table \ref{tab:estimators}; the rebar
-  adjustments to the nearest neighbor and coursened exact match were
+  adjustments to the nearest neighbor and coarsened exact match were
   done alongside within-sample adjustment.%, optimal pair
   %matching, nearest-neighbor matching, coarsened exact
   %matching, and optimal pair matching using machine-learning
