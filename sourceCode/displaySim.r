@@ -104,7 +104,9 @@ plotBadGG <- function(stLasso,stRF){#,sdYc){
                                                                    na.rm=TRUE),2))),
                                                   c('0','0.05')))))+
                 theme(legend.position='top')
-    p+scale_fill_manual(values=c("white","#5e3c99"))+scale_color_manual(values=c("black","#5e3c99"))
+    p+scale_fill_manual(values=c("white","#4e2c89"))+scale_color_manual(values=c("black","#4e2c89"))
+
+
 }
 
 
@@ -168,7 +170,7 @@ plotSimGG <- function(st,tikz=FALSE){
     p <- p + geom_segment(data=pdat, aes(x=xmin, xend=xmax,
                          y=middle, yend=middle), colour="black", size=1,inherit.aes=FALSE)
 
-    p+scale_fill_manual(values=c("white","#e66101","#5e3c99"))+scale_color_manual(values=c("black","#e66101","#5e3c99"))
+    p+scale_fill_manual(values=c("white","#f6b111","#4e2c89"))+scale_color_manual(values=c("black","#f6b111","#4e2c89"))
 
 }
 
