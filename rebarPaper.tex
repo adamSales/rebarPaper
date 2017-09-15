@@ -1136,7 +1136,7 @@ imbalance that was in the full sample.
 
 
 % latex table generated in R 3.3.1 by xtable 1.8-2 package
-% Thu Dec 08 11:59:53 2016
+% Thu Sep 14 11:05:07 2017
 \begin{table}[ht]
 \centering
 \begin{tabular}{lrrrr}
@@ -1159,7 +1159,7 @@ imbalance that was in the full sample.
   trend: AIMS Math (10th) & -0.42 &     & 0.10 &     \\ 
   \% AIMS Eng. Missing & -0.27 &     & -0.17 &     \\ 
   \% AIMS Math Missing & -0.20 &     & -0.22 &     \\ 
-  $\yhat (\covVec)$ & -0.05 &     & 0.16 &     \\ 
+  $\yhat (\covVec)$ & -0.06 &     & 0.14 &     \\ 
    \hline
 \end{tabular}
 \caption{Standardized differences testing balance on
@@ -1170,15 +1170,15 @@ imbalance that was in the full sample.
 
 \subsubsection{Estimating  $\algorithm$}
 % latex table generated in R 3.3.1 by xtable 1.8-2 package
-% Fri Aug 18 14:26:22 2017
+% Thu Sep 14 11:05:07 2017
 \begin{table}[ht]
 \centering
 \begin{tabular}{rrrrrr}
   \hline
  & Lasso & Random Forest & BayesLM & Ridge & Mean \\ 
   \hline
-RMSE & 19.18 & 15.73 & 44.92 & 19.57 & 26.89 \\ 
-  $R^2$ & 0.49 & 0.66 & -1.79 & 0.47 & -0.00 \\ 
+RMSE & 18.10 & 15.56 & 45.36 & 18.54 & 26.93 \\ 
+  $R^2$ & 0.55 & 0.66 & -1.85 & 0.52 & -0.00 \\ 
   coefficient & 0.00 & 1.00 & 0.00 & 0.00 & 0.00 \\ 
    \hline
 \end{tabular}
@@ -1242,7 +1242,7 @@ If there are no outlier schools in the proximal set, proximal validation will no
 
 As an additional check of the identification assumption (\ref{assumption:experiment}) for match $\match$, we tested balance on $\hat{y}_C(\covMat)$, in the same way as for other covariates: we tested if $\EE \bm{\hat{y}}_C^T\bm{Z}/n_T=\EE \bm{\hat{y}}_C^T(\bm{1}-\bm{Z})/n_C$.
 The resulting p-value from the \verb|xBalance| routine was
-0.46%$
+0.5%$
 ; the balance test on $\hat{y}_C(\covMat)$ does not falsify (\ref{assumption:experiment}).
 
 \subsubsection{Estimating Treatment Effects}
@@ -1251,15 +1251,15 @@ The resulting p-value from the \verb|xBalance| routine was
 
 
 % latex table generated in R 3.3.1 by xtable 1.8-2 package
-% Thu Dec 08 13:00:00 2016
+% Thu Sep 14 11:10:19 2017
 \begin{table}[ht]
 \centering
 \begin{tabular}{rllll}
   \hline
  & Estimate & SE & p-value & 95\% CI \\ 
   \hline
-PSM & 5.91 & 4.98 & 0.22 & (-5.9,18.3) \\ 
-  rebar & 1.3 & 3.64 & 0.32 & (-4.1,9.8) \\ 
+PSM & 5.91 & 4.98 & 0.48 & (-10.4,22.53) \\ 
+  rebar & 1.82 & 3.65 & 0.57 & (-5.41,12.17) \\ 
    \hline
 \end{tabular}
 \caption{The average treatment effect on the treated $\tau_{ETT}$, along with regression standard errors and permutational p-values and 95\%
@@ -1279,7 +1279,7 @@ However, the rebar estimate resulted in a confidence interval with less than hal
 An anonymous reviewer suggested a post-hoc assessment of $\algorithm$'s
 fit: estimating $R^2_\Match$ by comparing $y_C$ from within the
 match to corresponding predictions $\hat{y}_C$.
-The result was $\hat{R}^2_\Match=$0.72.
+The result was $\hat{R}^2_\Match=$0.71.
 
 
 \section{Conclusion}\label{sec:conclusion}

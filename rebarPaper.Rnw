@@ -1303,7 +1303,7 @@ par(mfrow=c(1,2))
 plot(readtrain, yhat[train],xlab='Test Scores (Remnant)',ylab='Predicted Test Scores',sub='(A)',
      ylim = range(readtrain),xlim=range(yhat))
 abline(0,1)
-legend('topleft',paste('$R^2$ =',round(tab['$R^2$','Random_Forest'],2)),bty='n')
+legend('topleft',paste('$R^2$ =',round(tab['$R^2$','Random Forest'],2)),bty='n')
 plot(readtrain[!is.na(mBig)],mvMod$SL.predict[!is.na(mBig)],
      xlab=paste('Test Scores (Proximal Remnant)',sep=''),
      ylab='Predicted Test Scores',sub='(B)',ylim=range(readtrain),xlim=range(yhat))
