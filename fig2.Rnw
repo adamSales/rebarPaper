@@ -1,0 +1,150 @@
+\documentclass[12pt,landscape]{article}
+
+%\usepackage{endfloat}
+%\usepackage{soul}
+\pagenumbering{gobble}
+\usepackage{type1ec}
+\usepackage{subcaption}
+\usepackage{fullpage}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{multirow}
+\usepackage{comment}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+%\usepackage{bbm}
+\usepackage{setspace}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{bm}
+\usepackage{pdflscape}
+%\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage{xr}
+%\usepackage{mathabx}
+%\usepackage{filecontents}
+%\usepackage{bibentry}
+%\usepackage{hanging}
+%\usepackage{apacite}
+\usepackage{hyperref}
+\usepackage{makecell}
+
+%\usepackage{endnotes}
+
+%\let\footnote=\endnote
+
+
+\doublespacing
+\newcommand{\bx}{\bm{X}}
+\newcommand{\ncm}{n_{Cm}}
+\newcommand{\ntm}{n_{Tm}}
+\newcommand{\bycm}{\bm{y}_{Cm}}
+\newcommand{\est}{\hat{\tau}_{\text{rebar}}}
+\newcommand{\yci}{y_{Ci}}
+\newcommand{\yti}{y_{Ti}}
+\newcommand{\yhati}{\hat{y}_{Ci}}
+\newcommand{\yhat}{\hat{y}_C}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\indicator}[1]{\mathbf{1}_{\left[ {#1} \right] }}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\newcommand{\Match}{M}
+\newcommand{\match}{m}
+\newcommand{\algorithm}{\hat{y}_C(\cdot)}
+\newcommand{\covMat}{\bm{X}}
+\newcommand{\covVec}{x}
+
+%\newcommand\verb|xBalance()|{\verb| xBalance() |}
+
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{ce}{Counter-Example}
+%\newtheorem{ass}{Assumption}
+\newtheorem{alg}{Algorithm}
+%\newtheorem*{ass*}{Assumption}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+
+\newenvironment{ass}[2][Assumption:]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2}.]}{\end{trivlist}}
+
+%\definecolor{purple}{rgb}{0.75,0,0.75}
+
+<<include=FALSE>>=
+library(knitr)
+library(tikzDevice)
+opts_chunk$set(
+echo=FALSE, results='asis',cache=FALSE,warning=FALSE,error=FALSE,dev='tikz',message=FALSE,autodep = TRUE
+    )
+
+options(tikzDefaultEngine = "pdftex")
+
+
+testStat <- function(dat,y='Ytilde'){
+    form <- as.formula(paste(y,'~Z+match'))
+    if(is.null(dat$weights)) return(coef(lm(form,data=dat))[2])
+    coef(lm(form,data=dat,weights=dat$weights))[2]
+}
+
+## data analysis functions:
+permTestFast <- function(matchDat, B=500,y='eoc',tau=0,ts=testStat,IV=FALSE,db=FALSE){
+    if(IV) matchDat$Z <- matchDat$uptake
+    matchDat[[y]] <- matchDat[[y]]-tau*matchDat$Z
+    t=ts(matchDat,y)
+    rand <- lapply(1:B,function(r) shufTrt(matchDat$Z, matchDat$match))
+    T <- sapply(rand,function(r) ts(cbind(subset(matchDat,select=-Z),Z=r),y=y))
+    c(t,mean(T>=abs(t)))
+}
+
+shufTrt <- function(Z,match){
+    unsplit(sapply(split(Z,match),sample),match)
+}
+
+CI <- function(dat,start=0,increment=0.1,level=0.95,outcome='Ytilde',B=1000,trace=TRUE,D,HL=TRUE){
+    alpha <- (1-level)
+
+    startGood <- permTestFast(dat,B=B,outcome,tau=start)
+    if(startGood[2]<alpha) stop('start value not in interval!')
+
+    #first go down
+    down <- halfCI(dat,start=start,increment,level,outcome,B,trace,D,HL,up=FALSE)
+    up <- halfCI(dat,start=start,increment,level,outcome,B,trace,D,HL,up=TRUE)
+
+    minTau <- down[[1]]
+    maxTau <- up[[1]]
+
+    if(HL){
+        ps <- c(down[[2]],startGood[2],up[[2]])
+        taus <- c(seq(start-increment,minTau,by=-increment),start,seq(start+increment,maxTau,by=increment))
+        HLest <- taus[which.max(ps)]
+    }
+    if(HL) return(c(minTau,maxTau,HLest))
+    c(min(range[accept==TRUE]),max(range[accept==TRUE]))
+
+}
+
+
+
+@
+
+
+\begin{document}
+
+
+
+<<simulationResults,results='hide',fig.width=9,fig.height=6.5>>=
+source('sourceCode/displaySim.r')
+gmBad <- c(0,0.5)
+decayBad <- c(0,0.05)
+#badrr <- justPSMjustBad(1000,n=n,p=p,nt=nt,gm=gmBad,DECAY=decayBad,parr=TRUE)
+
+files <- list.files('output')
+load(paste0('output/',max(grep('simBadLasso',files,value=TRUE))))
+load(paste0('output/',max(grep('simBadRF',files,value=TRUE))))
+
+nsimbad <- nrow(resultsBadLasso[[1]])
+
+plotBadGG(stLasso=resultsBadLasso,stRF=resultsBadRF)
+
+@
+\end{document}
