@@ -22,10 +22,17 @@ reformRun <- function(run){
 
     colnames(run)[which(colnames(run)=='psm')[2]] <- 'psmml'
     colnames(run)[which(colnames(run)=='psm.rebar')[2]] <- 'psmml.rebar'
+    if(colnames(run)[1]=='') colnames(run)[1] <- 'diffinmeans'
+    colnames(run)[which(colnames(run)=='reloopols')] <- 'psm.reloop'
+    colnames(run)[which(colnames(run)=='reloopolsplus')] <- 'psm.reloopPlusOLS'
+    colnames(run)[which(colnames(run)=='relooprf')] <- 'psm.reloopPlusRF'
 
-    methods <- c('psm','psm.rebar',
+
+
+    methods <- c('diffinmeans','psm','psm.rebar',
                  'nn','nn.adj','nn.adj.rebar',
-                 'cem','cem.adj','cem.adj.rebar','psmml','psmml.rebar')
+                 'cem','cem.adj','cem.adj.rebar','psmml','psmml.rebar','psm.reloop',
+                 'psm.reloopPlusOLS','psm.reloopPlusRF')
     run <- run[,colnames(run)%in%methods]
     for(cc in 1:ncol(run)) run[,cc] <- run[,cc]/SD
     tot <- data.frame(est=do.call('c',as.data.frame(run)),
@@ -112,7 +119,7 @@ plotBadGG <- function(stLasso,stRF){#,sdYc){
 
 
 
-plotSimGG <- function(st,tikz=FALSE){
+plotSimGG <- function(st,tikz=FALSE,simple=FALSE){
 
     if(!is.numeric(st[[1]])){
          st <- lapply(st,makeNum)
@@ -132,22 +139,23 @@ plotSimGG <- function(st,tikz=FALSE){
 
     dat$method <- as.character(dat$method)
 
-
-    dat$matchMeth <- factor(gsub('\\.[A-Za-z\\.]+','',dat$method))
-    levels(dat$matchMeth) <- list(`Optimal Pairs\n Logistic PS`='psm',
+    if(simple) dat$matchMeth=dat$method else{
+        dat$matchMeth <- factor(gsub('\\.[A-Za-z\\.]+','',dat$method))
+        levels(dat$matchMeth) <- list(`Optimal Pairs\n Logistic PS`='psm',
                                   `Nearest Neighbors \n Logistic PS`='nn',
                                   `Coursened Exact \n Matches`='cem',
                                   `Optimal pairs \n SuperLearner PS`='psmml')
-
+    }
     dat$Adjustment <- factor(ifelse(grepl('rebar',dat$method),'Rebar',
-                             ifelse(grepl('.adj',dat$method),'Within-Sample','None')),
-                             levels=c('None','Within-Sample','Rebar'))
+                             ifelse(grepl('.adj',dat$method),'Within-Sample',
+                             ifelse(grepl('reloop',dat$method),'ReLOOP','None'))),
+                             levels=c('None','Within-Sample','Rebar','ReLOOP'))
 
     if(tikz){
      rhoHead <- setNames(paste('$R^2_{\\text{remnant}}\\approx$',round(R2,2)),
                          names(R2))
-     } else rhoHead <- setNames(expression(paste(R[remnant]^2%~~%0,'.',round(R2*100),sep='')),
-                                         names(R2))
+     } else rhoHead <- setNames(paste("R2=",round(R2*100),"%"),names(R2)) #expression(paste(R[remnant]^2%~~%0,'.',round(R2*100),sep='')),
+#                                         names(R2))
 
     p <- ggplot(dat,aes(matchMeth,est,fill=Adjustment,color=Adjustment))
 

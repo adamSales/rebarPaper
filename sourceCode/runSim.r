@@ -5,11 +5,12 @@ library(optmatch)
 library(SuperLearner)
 library(Matching)
 library(survey)
-library(cem)
+#library(cem)
 library(mvtnorm)
 library(parallel)
 library(randomForest)
 library(glmnet)
+library(loop.estimator)
 
 clustLoad <- FALSE
 if(!is.element('cl',ls())) {clustLoad <- TRUE} else if(!'cluster'%in%class(cl)) clustLoad <- TRUE
@@ -37,7 +38,8 @@ smallsim <- function(B=200,X,bg,nt,curved=FALSE, SL.library,SL.libraryZ){
         return(
             foreach(i = 1:B,.combine=rbind,
                     .packages=c('optmatch','SuperLearner','tmle',
-                                'Matching','survey','cem','glmnet','randomForest',
+                                'Matching','survey',#'cem',
+                                'glmnet','randomForest',
                                 'MASS'))%dopar%{
                                         #cat(i,' ')
                                     simOne(X=X,bg=bg,nt=nt,curved=curved,
@@ -77,8 +79,8 @@ simTotRR <- function(B,n=400,p=600,nt=50,gm=c(0,0.1,0.5),DECAY=c(0,0.004,0.05),S
             cat('gamma=',gm[g],' tau=',tau,' decay=',DECAY[d],'\n')
             s <- smallsim(B=B,X=X[[d]],bg=BG[[g]],nt=nt,curved=FALSE,SL.library=SL.library,SL.libraryZ=SL.libraryZ)
             resultsGood[[paste(gm[g],'_',DECAY[d],sep='')]] <- s
-            save(list=c(as.vector(lsf.str(envir=.GlobalEnv)),'resultsGood','startTime','runSimCurrent','simulationFunctionsCurrent','X','BG','CALL',as.character(CALL)[-c(1,2)]),
-                 file=paste('output/simGood',Sys.Date(),'.RData',sep=''))
+            #save(list=c(as.vector(lsf.str(envir=.GlobalEnv)),'resultsGood','startTime','runSimCurrent','simulationFunctionsCurrent','X','BG','CALL',as.character(CALL)[-c(1,2)]),
+             #    file=paste('output/simGood',Sys.Date(),'.RData',sep=''))
         }
     list(resultsGood=resultsGood,BG=BG,X=X)
 }

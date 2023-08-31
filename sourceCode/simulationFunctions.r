@@ -69,15 +69,39 @@ psmEst <- function(dat,X,pscores,SL.library,runmv=FALSE){
 
     match <- PSmatch(dat,pscores)
     est <- matchEst(dat$y,dat$z,match)
-    progMod <- progEst(dat=dat,X=X,m=match,returnMod=TRUE,SL.library=SL.library)
-    e <- dat$y-progMod$SL.predict
+    #progMod <- progEst(dat=dat,X=X,m=match,returnMod=TRUE,SL.library=SL.library)
+    #prog <- progMod$SL.predict
+    
+    rf=randomForest(X[dat$z==0&is.na(match),],dat$y[dat$z==0&is.na(match)])
+    prog=predict(rf,X)
+    
+
+    e <- dat$y-prog
     rebar <- matchEst(e,dat$z,match)
+
+    reloopOLS <- p_loop(Y=dat$y[!is.na(match)],Tr=dat$z[!is.na(match)],
+                        Z=cbind(prog[!is.na(match)]),
+                        P=as.numeric(match[!is.na(match)]),
+                        pred=p_ols_interp)
+    reloopOLSplus <- p_loop(Y=dat$y[!is.na(match)],Tr=dat$z[!is.na(match)],
+                        Z=cbind(dat$x[!is.na(match),1:5],prog[!is.na(match)]),
+                        P=as.numeric(match[!is.na(match)]),
+                        pred=p_ols_interp)
+    reloopRF <- p_loop(Y=dat$y[!is.na(match)],Tr=dat$z[!is.na(match)],
+                        Z=cbind(dat$x[!is.na(match),1:5],prog[!is.na(match)]),
+                        P=as.numeric(match[!is.na(match)]),
+                        pred=p_rf_interp)
+
 
     mv <- NA
     if(runmv) mv <- MV(dat,X,match,pscores,SL.library)
-    R2 <- 1-min(progMod$cvRisk)/var(dat$y[is.na(match)])
+    R2 <- rf$rsq[length(rf$rsq)] #1-min(progMod$cvRisk)/var(dat$y[is.na(match)])
 
-    setNames(c(est,rebar,mv,R2), c('psm','psm.rebar','MV','R2'))
+    setNames(c(est,rebar,
+              reloopOLS[1],
+              reloopOLSplus[1],
+              reloopRF[1],
+              mv,R2), c('psm','psm.rebar','reloopOLS','reloopOLSplus','reloopRF','MV','R2'))
 }
 
 PSmatch <- function(dat,pscores){
@@ -185,10 +209,10 @@ simOne <- function(X,bg,nt,curved,SL.library,SL.libraryZ){
         } else{
             tauhats <- c(
                 mean(dat$y[dat$z==1])-mean(dat$y[dat$z==0]), #unmatched
-                psmEst(dat,X,pmod$linear,SL.library), #PSM
-                NNmatch(pmod$linear.predictors,dat,X,SL.library=SL.library), #NN
-                cemEst(dat,X,SL.library=SL.library), #CEM
-                MLest(dat,X,SL.library,SL.libraryZ)) ## ML + PSM
+                psmEst(dat,X,pmod$linear,SL.library))#, #PSM
+                #NNmatch(pmod$linear.predictors,dat,X,SL.library=SL.library))#, #NN
+                #cemEst(dat,X,SL.library=SL.library), #CEM
+                #MLest(dat,X,SL.library,SL.libraryZ)) ## ML + PSM
         }
 
     c(tauhats,sd(dat$y))
