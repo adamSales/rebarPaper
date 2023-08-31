@@ -1,13 +1,27 @@
 ### estimation functions
 
 MLprop <- function(dat,X,SL.libraryZ){
-    mod <- SuperLearner(dat$z,X,family=binomial,SL.library=SL.libraryZ)
+    mod <- SuperLearner(dat$z,as.data.frame(X),family=binomial,SL.library=SL.libraryZ)
     mod$SL.predict
 
 }
 MLest <- function(dat,X,SL.library,SL.libraryZ){
     pscores <- MLprop(dat,X,SL.libraryZ)
     psmEst(dat,X,pscores,SL.library,runmv=FALSE)
+}
+
+TMLE <- function(dat,X,SL.library,pscores){
+  mod=try(tmle(
+    Y=dat$y,
+    A=dat$z,
+    W=as.data.frame(X),
+    Q.SL.library=SL.library,
+    g1W=pscores))
+ if(inherits(mod,"try-error")){
+  print("NO TMLE THIS TIME")
+  return(NA)
+ }
+ mod$estimates$ATE$psi
 }
 
 ### nearest neighbor matching with or without bias adjustment, rebar
@@ -72,9 +86,15 @@ psmEst <- function(dat,X,pscores,SL.library,runmv=FALSE){
     #progMod <- progEst(dat=dat,X=X,m=match,returnMod=TRUE,SL.library=SL.library)
     #prog <- progMod$SL.predict
     
-    rf=randomForest(X[dat$z==0&is.na(match),],dat$y[dat$z==0&is.na(match)])
-    prog=predict(rf,X)
+    #rf=randomForest(X[dat$z==0&is.na(match),],dat$y[dat$z==0&is.na(match)])
+    #prog=predict(rf,X)
+    remnantMod <- SuperLearner(
+      Y=dat$y[dat$z==0&is.na(match)],
+      X=as.data.frame(X[dat$z==0&is.na(match),]),
+      newX=as.data.frame(X),
+      SL.library=SL.library)
     
+    prog <- remnantMod$SL.predict
 
     e <- dat$y-prog
     rebar <- matchEst(e,dat$z,match)
@@ -105,6 +125,7 @@ psmEst <- function(dat,X,pscores,SL.library,runmv=FALSE){
 }
 
 PSmatch <- function(dat,pscores){
+  if(all(pscores>0 & pscores<1)) pscores <- qlogis(pscores)
   m <- pairmatch(dat$z~pscores,remove=TRUE,data=dat)
   m
 }
@@ -201,6 +222,8 @@ simOne <- function(X,bg,nt,curved,SL.library,SL.libraryZ){
 
     pmod <- propmodel(dat,X)
 
+    pscoreML <- MLprop(dat,X,SL.libraryZ)
+
     if(curved){
         tauhats <- c(
             mean(dat$y[dat$z==1])-mean(dat$y[dat$z==0]), #unmatched
@@ -208,8 +231,11 @@ simOne <- function(X,bg,nt,curved,SL.library,SL.libraryZ){
             )
         } else{
             tauhats <- c(
-                mean(dat$y[dat$z==1])-mean(dat$y[dat$z==0]), #unmatched
-                psmEst(dat,X,pmod$linear,SL.library))#, #PSM
+                unadj=mean(dat$y[dat$z==1])-mean(dat$y[dat$z==0]), #unmatched
+                psm=psmEst(dat,X,pmod$linear,SL.library),
+                psmML=psmEst(dat,X,pscoreML,SL.library),
+                tmleEst=TMLE(dat,X,SL.library,pscoreML)
+                )#, #PSM
                 #NNmatch(pmod$linear.predictors,dat,X,SL.library=SL.library))#, #NN
                 #cemEst(dat,X,SL.library=SL.library), #CEM
                 #MLest(dat,X,SL.library,SL.libraryZ)) ## ML + PSM

@@ -11,6 +11,7 @@ library(parallel)
 library(randomForest)
 library(glmnet)
 library(loop.estimator)
+library(tmle)
 
 clustLoad <- FALSE
 if(!is.element('cl',ls())) {clustLoad <- TRUE} else if(!'cluster'%in%class(cl)) clustLoad <- TRUE
@@ -24,7 +25,7 @@ if(clustLoad){
         registerDoSNOW(cl)
     } else{
         library(doMC)
-        registerDoMC(4)
+        registerDoMC(numClus)
     }
 }
 
@@ -61,7 +62,9 @@ smallsimSer <- function(B,X,bg,nt,curved,SL.library,SL.libraryZ){
 }
 
 
-simTotRR <- function(B,n=400,p=600,nt=50,gm=c(0,0.1,0.5),DECAY=c(0,0.004,0.05),SL.library=c('SL.glmnet','SL.randomForest'),SL.libraryZ=SL.library,parr=TRUE){
+simTotRR <- function(B,n=400,p=600,nt=50,gm=c(0,0.1,0.5),DECAY=c(0,0.004,0.05),
+    SL.library=c('SL.glmnet','SL.randomForest','SL.ridge'),
+    SL.libraryZ=setdiff(SL.library,'SL.ridge'),parr=TRUE){
 
     startTime <- Sys.time()
     runSimCurrent <- readLines('sourceCode/runSim.r')
